@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import win10toast as wtt
-import GenerateProxyIP as genIP
+import GenerateUserAgents as genUA
 
 class kissAnimeScraper:
 
@@ -22,7 +22,7 @@ class kissAnimeScraper:
 
         driver = webdriver.Chrome(chromeDriver_PATH, options = chromeOptions)
 
-        
+
 
     # def animeSearch(self, animeTitle):
     #     """
