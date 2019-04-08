@@ -1,5 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.common.by import By
 import win10toast as wtt
 import GenerateUserAgents as genUA
 
@@ -22,46 +26,74 @@ class kissAnimeScraper:
 
         driver = webdriver.Chrome(chromeDriver_PATH, options = chromeOptions)
 
+        #First letter in animeTitle stored to make search faster by modifying url
+        animeTitle_firstLetter = animeTitle[0]
+
+        #url for kissAnime anime search wepbage
+        url = ""
+        if (animeTitle_firstLetter.isalpha()):
+            url = "https://kissanime.ru/AnimeList?c="+animeTitle_firstLetter.lower() + "&"
+        else:
+            url = "https://kissanime.ru/AnimeList?"
+
+        pageNumber = 1
+
+        #url of website which would be changing as the pages of anime are iterated through
+        dynamicURL = url
+
+        #while 'next' button is being clicked
+        while True:
+
+            driver.get(dynamicURL)
+
+            animeListTable_cssSelector = "div#container>div#leftside>div.bigBarContainer>div.barContent>div>table.listing"
+            currentPage_cssSelector = "div#container>div#leftside>div.bigBarContainer>div.pagination.pagination-left>ul.pager>li.current"
+            lastButton_cssSelector = "div#container>div#leftside>div.bigBarContainer>div.pagination.pagination-left>ul.pager>li:last-child"
+
+            timeout = 10
+
+            #Ensure page has loaded
+            try:
+                #Determine if anime list is present
+                animeList_present = ec.presence_of_element_located((By.CSS_SELECTOR, animeListTable_cssSelector))
+                WebDriverWait(driver, timeout).until(animeList_present)
+            except TimeoutException:
+                print("Timed out while waiting for anime list page")
+            
+
+            currentPage = driver.find_element_by_css_selector(currentPage_cssSelector).text
+
+            last_Page = driver.find_element_by_css_selector(lastButton_cssSelector).text
+
+            if (last_Page == currentPage): break
 
 
-    # def animeSearch(self, animeTitle):
-    #     """
-    #     Search for anime provided as argument: animeTitle
-    #     """
-        
-    #     #url for kissAnime anime search wepbage
-    #     url = "https://kissanime.ru/AnimeList"
+            animeName_cssSelector = "div#container>div#leftside>div.bigBarContainer>div.barContent>div>table.listing>tbody>tr:not(.head)>td:first-child"
 
-    #     #setting user-agent to make request legitimate
-    #     myheaders = {
-    #         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36',
-    #         'referer' : 'https://kissanime.ru/'
-    #         }
+            animeNames = driver.find_elements_by_css_selector(animeName_cssSelector)
+    
+            matches = [anime.text.replace(" ","") for anime in animeNames if animeTitle in anime.text]
 
-    #     #ping website; make requests
-    #     animeSearch_response = requests.get(url, headers = myheaders, proxies = genIP.getRandomProxyIPDict(), timeout = (6,20))
-        
-    #     #check if request was successful
-    #     if (animeSearch_response.status_code != 200):
-    #         print("status code not 200", "status code is", animeSearch_response.status_code)
-    #         pass
+            if len(matches) > 0: #If possible matches extent to next page this won't find them. Fix this!
+                print (matches)  #Possible fix: check if last anime on page ends the search. If not move to next page
+                break
 
-    #     #create soup
-    #     soupSearch = bs(animeSearch_response.content, 'html.parser')
+            #Move to next page
+            pageNumber += 1
+            dynamicURL = (url + "page={0}").format(pageNumber)
 
-    #     print(soupSearch)
 
-    #     soupElements = soupSearch.select("div.pagination.pagination-left")        
-
-    #     # for soupElement in soupElements:
-    #     #     print("se: ", soupElement)
+#Phase one partly completed.
+#Some data may need to be stored. Consider database, text file, or other possible methods
+#Additionally, check if scraping can be sped up. Checking if last anime on page ends the search could help here.
+#On phase two, retrieve anime url for given anime and check for new additions
 
 def main():
 
     #test object
     scraper = kissAnimeScraper()
     #test method call
-    scraper.animeSearch("Mob psycho") 
+    scraper.animeSearch("Naruto (Sub)") 
 
 if __name__ == "__main__":
 
