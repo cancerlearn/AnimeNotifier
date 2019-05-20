@@ -115,7 +115,7 @@ class kissAnimeScraper:
         self.driver.get(link)
 
         animeEpisodesTable_cssSelector = "#leftside>div:nth-child(4)>div.barContent.episodeList>div:nth-child(2)>table"
-        animeEpisodes_cssSelector = "#leftside>div:nth-child(4)>div.barContent.episodeList>div:nth-child(2)>table>tr:not-first-of-type>td:first-child"
+        animeEpisodes_cssSelector = "#leftside>div:nth-child(4)>div.barContent.episodeList>div:nth-child(2)>table>tbody>tr:nth-child(n+3):nth-child(n)>td:nth-child(1)"
 
         timeout = 20
 
@@ -126,9 +126,9 @@ class kissAnimeScraper:
         except TimeoutException:
             print("Timed out while waiting for anime episodes list page.")
 
-        episodeList = self.driver.find_element_by_css_selector(animeEpisodes_cssSelector)
-
-        episodes = [int(episode.split("Episode")[1]) for episode in episodeList]
+        episodeList = self.driver.find_elements_by_css_selector(animeEpisodes_cssSelector)
+        
+        episodes = [int(episode.text.split("Episode")[1]) for episode in episodeList]
 
         return episodes
 
