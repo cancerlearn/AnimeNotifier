@@ -117,7 +117,7 @@ class kissAnimeScraper:
         animeEpisodesTable_cssSelector = "#leftside>div:nth-child(4)>div.barContent.episodeList>div:nth-child(2)>table"
         animeEpisodes_cssSelector = "#leftside>div:nth-child(4)>div.barContent.episodeList>div:nth-child(2)>table>tr:not-first-of-type>td:first-child"
 
-        timeout = 10
+        timeout = 20
 
         try:
             #Determine if anime list is present
